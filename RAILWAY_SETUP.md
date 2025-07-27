@@ -78,6 +78,12 @@ NODE_ENV=production
 
 ## Troubleshooting
 
+### Nixpacks Build Errors
+Jika mendapat error "undefined variable 'npm'":
+1. Pastikan file `nixpacks.toml` ada dan benar
+2. Coba redeploy project
+3. Jika masih error, gunakan Dockerfile sebagai alternatif
+
 ### Database Connection Issues
 - Pastikan environment variables database sudah benar
 - Cek log Railway untuk error koneksi
@@ -85,10 +91,31 @@ NODE_ENV=production
 ### Build Issues
 - Pastikan semua dependencies ada di package.json
 - Cek log build untuk error
+- Pastikan Node.js version compatible (20.x)
 
 ### Runtime Issues
 - Cek log aplikasi untuk error
 - Pastikan port configuration benar
+- Pastikan database service running
+
+## Alternative Deployment Methods
+
+### Method 1: Nixpacks (Recommended)
+- Gunakan file `nixpacks.toml` yang sudah disediakan
+- Railway akan otomatis detect dan gunakan konfigurasi ini
+
+### Method 2: Dockerfile
+Jika Nixpacks bermasalah, buat file `Dockerfile`:
+```dockerfile
+FROM node:20-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+EXPOSE 4000
+CMD ["npm", "start"]
+```
 
 ## Monitoring
 
