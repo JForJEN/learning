@@ -65,12 +65,22 @@ app.use(async (req, res, next) => {
 // Serve static files
 app.use('/uploads', express.static('uploads'));
 
-// Serve React app in production
+// Serve static files from dist folder in production
 if (process.env.NODE_ENV === 'production') {
+  // Serve static files from dist folder
   app.use(express.static(path.join(__dirname, 'dist')));
   
-  // Serve index.html for all routes in production
-  app.get('*', (req, res) => {
+  // Serve index.html for all non-API routes in production
+  app.get('*', (req, res, next) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/')) {
+      return next();
+    }
+    // Skip health check routes
+    if (req.path === '/' || req.path === '/test' || req.path === '/api/health') {
+      return next();
+    }
+    // Serve React app for all other routes
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
   });
 } else {

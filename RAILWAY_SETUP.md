@@ -85,6 +85,13 @@ Aplikasi menyediakan beberapa endpoint untuk health check:
 
 ## Troubleshooting
 
+### 404 Errors and Static File Issues
+Jika mendapat error "Failed to load resource: 404":
+1. **Static Files**: Pastikan file `dist/index.html` ada dan benar
+2. **Routing**: Cek apakah routing di server.js sudah benar
+3. **API Routes**: Pastikan API routes tidak ter-intercept oleh static file serving
+4. **CDN Resources**: Pastikan React CDN bisa diakses
+
 ### Database Setup Issues
 Jika mendapat error "This command is not supported in the prepared statement protocol":
 1. **Environment Variables**: Pastikan semua database variables sudah benar

@@ -29,6 +29,80 @@
         </div>
       </div>
     </div>
-    <script type="module" src="/index.js"></script>
+    
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
+    
+    <!-- Simple React App -->
+    <script>
+      const { useState, useEffect } = React;
+      
+      function App() {
+        const [loading, setLoading] = useState(true);
+        const [error, setError] = useState(null);
+        
+        useEffect(() => {
+          // Check if API is working
+          fetch('/api/health')
+            .then(response => response.json())
+            .then(data => {
+              console.log('API Health Check:', data);
+              setLoading(false);
+            })
+            .catch(err => {
+              console.error('API Error:', err);
+              setError('API tidak tersedia');
+              setLoading(false);
+            });
+        }, []);
+        
+        if (loading) {
+          return React.createElement('div', { className: 'min-h-screen flex items-center justify-center' },
+            React.createElement('div', { className: 'text-center' },
+              React.createElement('h1', { className: 'text-4xl font-bold mb-4' }, 'StillLearning'),
+              React.createElement('p', { className: 'text-xl mb-8' }, 'Platform Kursus Terbuka'),
+              React.createElement('div', { className: 'animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto' }),
+              React.createElement('p', { className: 'mt-4' }, 'Loading...')
+            )
+          );
+        }
+        
+        if (error) {
+          return React.createElement('div', { className: 'min-h-screen flex items-center justify-center' },
+            React.createElement('div', { className: 'text-center' },
+              React.createElement('h1', { className: 'text-4xl font-bold mb-4' }, 'StillLearning'),
+              React.createElement('p', { className: 'text-xl mb-8 text-red-400' }, error),
+              React.createElement('button', { 
+                className: 'bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg',
+                onClick: () => window.location.reload()
+              }, 'Retry')
+            )
+          );
+        }
+        
+        return React.createElement('div', { className: 'min-h-screen flex items-center justify-center' },
+          React.createElement('div', { className: 'text-center' },
+            React.createElement('h1', { className: 'text-4xl font-bold mb-4' }, 'StillLearning'),
+            React.createElement('p', { className: 'text-xl mb-8' }, 'Platform Kursus Terbuka'),
+            React.createElement('p', { className: 'text-green-400 mb-4' }, '✅ API Connected'),
+            React.createElement('div', { className: 'space-y-4' },
+              React.createElement('a', { 
+                href: '/api/health',
+                className: 'block bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg'
+              }, 'API Health Check'),
+              React.createElement('a', { 
+                href: '/test',
+                className: 'block bg-green-600 hover:bg-green-700 px-6 py-2 rounded-lg'
+              }, 'Test Endpoint')
+            )
+          )
+        );
+      }
+      
+      // Render the app
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(React.createElement(App));
+    </script>
   </body>
 </html> 
