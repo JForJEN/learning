@@ -27,7 +27,7 @@ async function setupDatabase() {
     console.log('✅ Database created/verified');
 
     // Use the database
-    await connection.execute(`USE ${process.env.DB_NAME || 'stilllearning_db'}`);
+    await connection.query(`USE ${process.env.DB_NAME || 'stilllearning_db'}`);
 
     // Create users table
     await connection.execute(`
