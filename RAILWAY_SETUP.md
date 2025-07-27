@@ -76,7 +76,21 @@ NODE_ENV=production
 - **Email**: admin@stilllearning.com
 - **Password**: admin123
 
+## Health Check Endpoints
+
+Aplikasi menyediakan beberapa endpoint untuk health check:
+- `/` - Root endpoint dengan status aplikasi
+- `/test` - Test endpoint untuk Railway healthcheck
+- `/api/health` - API health check endpoint
+
 ## Troubleshooting
+
+### Health Check Issues
+Jika mendapat error "service unavailable":
+1. **Cek Environment Variables**: Pastikan semua database variables sudah benar
+2. **Cek Database Connection**: Pastikan MySQL service running
+3. **Cek Logs**: Lihat log Railway untuk error detail
+4. **Manual Test**: Coba akses endpoint `/` atau `/test` manual
 
 ### Installation Issues (Resolved)
 - Menggunakan `npm install --only=production --no-package-lock`
@@ -86,6 +100,7 @@ NODE_ENV=production
 ### Database Connection Issues
 - Pastikan environment variables database sudah benar
 - Cek log Railway untuk error koneksi
+- Pastikan MySQL service sudah running
 
 ### Runtime Issues
 - Cek log aplikasi untuk error

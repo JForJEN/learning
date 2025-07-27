@@ -540,6 +540,24 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Root health check endpoint for Railway
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'StillLearning API is running',
+    timestamp: new Date().toISOString() 
+  });
+});
+
+// Test endpoint for Railway healthcheck
+app.get('/test', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Health check passed',
+    timestamp: new Date().toISOString() 
+  });
+});
+
 // Handle React routing, return all requests to React app
 if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
@@ -548,10 +566,23 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 // Start server
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Server berjalan di port ${port}`);
   console.log(`📊 Database: ${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   if (process.env.NODE_ENV === 'production') {
     console.log('🌐 Production mode: Serving React app');
   }
+  console.log('✅ Health check endpoints available at /, /test, /api/health');
+});
+
+// Error handling for uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
 }); 
