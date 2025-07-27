@@ -8,23 +8,79 @@ export const AuthProvider = ({ children }) => {
   const [pendingCourses, setPendingCourses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const API_BASE_URL = 'http://localhost:4000/api';
+  // Dynamic API URL based on current location
+  const getApiBaseUrl = () => {
+    if (typeof window !== 'undefined') {
+      // Use current hostname to ensure we're using the right domain
+      const currentHost = window.location.hostname;
+      const currentProtocol = window.location.protocol;
+      
+      console.log('🌐 Current hostname:', currentHost);
+      console.log('🔗 Current protocol:', currentProtocol);
+      
+      if (currentHost.includes('railway.app')) {
+        return `${currentProtocol}//${currentHost}/api`;
+      }
+    }
+    
+    // Fallback for development
+    return 'http://localhost:4000/api';
+  };
+
+  const API_BASE_URL = getApiBaseUrl();
+
+  console.log('🔧 API_BASE_URL:', API_BASE_URL);
+  console.log('🌐 Current location:', window.location.href);
+  console.log('🏭 NODE_ENV:', process.env.NODE_ENV);
+
+  // Force reload if wrong URL is detected
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hostname.includes('railway.app')) {
+      const currentApiUrl = getApiBaseUrl();
+      const expectedHost = 'stilllearning-production-3b76.up.railway.app';
+      
+      if (!currentApiUrl.includes(expectedHost)) {
+        console.error('❌ Wrong API URL detected!', currentApiUrl);
+        console.log('🔄 Forcing page reload...');
+        window.location.reload(true);
+      }
+    }
+  }, []);
 
   const fetchCourses = async () => {
     try {
+      console.log('🔄 Fetching courses from:', `${API_BASE_URL}/courses`);
       const [publishedRes, pendingRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/courses`),
-        fetch(`${API_BASE_URL}/courses/pending`)
+        fetch(`${API_BASE_URL}/courses`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }),
+        fetch(`${API_BASE_URL}/courses/pending`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        })
       ]);
+      
+      console.log('📥 Published courses response:', publishedRes.status);
+      console.log('📥 Pending courses response:', pendingRes.status);
       
       if (publishedRes.ok && pendingRes.ok) {
         const published = await publishedRes.json();
         const pending = await pendingRes.json();
+        console.log('✅ Courses fetched successfully:', { published: published.length, pending: pending.length });
         setCourses(published);
         setPendingCourses(pending);
+      } else {
+        console.error('❌ Failed to fetch courses:', { published: publishedRes.status, pending: pendingRes.status });
       }
     } catch (error) {
-      console.error('Failed to fetch courses:', error);
+      console.error('❌ Failed to fetch courses:', error);
     } finally {
       setLoading(false);
     }
@@ -41,11 +97,15 @@ export const AuthProvider = ({ children }) => {
       
       const res = await fetch(`${API_BASE_URL}/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({ email, password, isAdmin }),
       });
       
       console.log('📥 Response status:', res.status);
+      console.log('📥 Response headers:', Object.fromEntries(res.headers.entries()));
       
       if (!res.ok) {
         const error = await res.json();

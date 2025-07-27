@@ -2,94 +2,100 @@
 
 Platform pembelajaran online yang memungkinkan pengguna untuk berbagi dan mengakses kursus.
 
-## 🚀 Deployment ke Railway
+## 🚀 Deployment di Railway
 
-### Persiapan
+### Struktur Service:
+- **1 Service Utama**: Frontend + Backend (terpadu)
+- **1 Service Database**: MySQL (terpisah)
 
-1. **Install Dependencies**
-   ```bash
-   npm install
+### Langkah-langkah Deployment:
+
+1. **Fork/Clone repository ini ke GitHub**
+
+2. **Setup di Railway:**
+   - Buka [Railway.app](https://railway.app)
+   - Login dengan GitHub
+   - Klik "New Project"
+   - Pilih "Deploy from GitHub repo"
+   - Pilih repository ini
+
+3. **Setup Database Service:**
+   - Di Railway dashboard, klik "New"
+   - Pilih "Database" → "MySQL"
+   - Setelah database dibuat, copy connection details
+
+4. **Setup Environment Variables di Service Utama:**
+   Di Railway project settings, tambahkan environment variables:
+   ```
+   DB_HOST=mysql.railway.internal
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASSWORD=rUgVruqkniZedtBpMSgzNpqfmtTzHrBU
+   DB_NAME=railway
+   NODE_ENV=production
+   PORT=4000
    ```
 
-2. **Setup Database**
-   - Buat database MySQL di Railway atau provider lain
-   - Jalankan script setup database:
-   ```bash
-   npm run setup-db
-   ```
+5. **Setup Database Schema:**
+   - Buka Railway MySQL database
+   - Jalankan script dari file `database_setup.sql`
 
-### Environment Variables
+6. **Deploy:**
+   - Railway akan otomatis build dan deploy
+   - Tunggu hingga status "Deployed"
 
-Buat file `.env` dengan variabel berikut:
+### 🔧 Troubleshooting:
 
-```env
-# Database Configuration
-DB_HOST=your-database-host
-DB_USER=your-database-user
-DB_PASSWORD=your-database-password
-DB_NAME=your-database-name
+**Jika website tidak muncul:**
+1. Cek Railway logs untuk error
+2. Pastikan environment variables sudah benar
+3. Pastikan database sudah ter-setup
+4. Cek apakah port sudah benar (Railway akan set PORT otomatis)
+
+**Jika API error:**
+1. Cek database connection
+2. Pastikan semua tables sudah dibuat
+3. Cek CORS settings
+
+### 📁 File Konfigurasi Penting:
+
+- `nixpacks.toml` - Konfigurasi build Railway
+- `railway.json` - Konfigurasi deployment
+- `Procfile` - Command start production
+- `backend/index.js` - Server utama
+- `vite.config.js` - Konfigurasi Vite
+
+### 🌐 URL Production:
+
+Setelah deploy berhasil, Railway akan memberikan URL seperti:
+`https://your-app-name.up.railway.app`
+
+## 🛠️ Development Local
+
+```bash
+# Install semua dependencies
+npm run install:all
+
+# Setup database
+# Import database_setup.sql ke MySQL
+
+# Setup .env di root directory
+DB_HOST=localhost
 DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=stilllearning
 
-# Server Configuration
-PORT=4000
-NODE_ENV=production
+# Run development (frontend + backend)
+npm run dev
 ```
 
-### Railway Deployment
+## 📝 Fitur:
 
-1. **Connect ke Railway**
-   - Install Railway CLI: `npm i -g @railway/cli`
-   - Login: `railway login`
-   - Link project: `railway link`
-
-2. **Setup Environment Variables di Railway**
-   - Buka dashboard Railway
-   - Tambahkan environment variables yang diperlukan
-   - Pastikan `NODE_ENV=production`
-
-3. **Deploy**
-   ```bash
-   railway up
-   ```
-
-### Scripts
-
-- `npm run dev` - Development mode (frontend only)
-- `npm run dev:full` - Development mode (frontend + backend)
-- `npm run build` - Build React app untuk production
-- `npm run start` - Start production server
-- `npm run setup-db` - Setup database
-
-### Struktur Project
-
-```
-stilllearning/
-├── server.js          # Unified Express server
-├── package.json       # Dependencies & scripts
-├── vite.config.js     # Vite configuration
-├── railway.json       # Railway configuration
-├── dist/              # Built React app (generated)
-├── uploads/           # Uploaded files
-├── components/        # React components
-├── pages/            # React pages
-├── context/          # React context
-└── backend/          # Database setup scripts
-```
-
-### Fitur
-
-- ✅ User authentication (login/register)
-- ✅ Course management
-- ✅ File uploads
-- ✅ Comments system
-- ✅ Admin dashboard
-- ✅ Responsive design
-
-### Database Schema
-
-Pastikan database memiliki tabel berikut:
-- `users` - User accounts
-- `courses` - Course data
-- `comments` - Course comments
-
-Jalankan `npm run setup-db` untuk membuat tabel secara otomatis. 
+- ✅ User Authentication (Login/Register)
+- ✅ Course Management
+- ✅ File Upload (Audio/Video)
+- ✅ Admin Dashboard
+- ✅ Comments System
+- ✅ Responsive Design
+- ✅ Railway Deployment Ready (Service Terpadu)

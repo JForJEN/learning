@@ -4,6 +4,9 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>StillLearning - Platform Kursus Terbuka</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -14,6 +17,31 @@
         font-family: 'Inter', sans-serif;
       }
     </style>
+    <script>
+      // Force clear cache and redirect if needed
+      (function() {
+        console.log('🧹 Clearing cache and checking URL...');
+        
+        // Clear all caches
+        if ('caches' in window) {
+          caches.keys().then(function(names) {
+            for (let name of names) {
+              caches.delete(name);
+              console.log('🗑️ Deleted cache:', name);
+            }
+          });
+        }
+        
+        // Check if we're on the right domain
+        const currentHost = window.location.hostname;
+        const expectedHost = 'stilllearning-production-3b76.up.railway.app';
+        
+        if (currentHost !== expectedHost && currentHost.includes('railway.app')) {
+          console.log('🔄 Redirecting to correct domain...');
+          window.location.href = window.location.href.replace(currentHost, expectedHost);
+        }
+      })();
+    </script>
   <script type="importmap">
 {
   "imports": {
