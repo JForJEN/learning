@@ -61,14 +61,14 @@ NODE_ENV=production
 ### 3. Configure Build Settings
 - Buka tab "Settings"
 - Pastikan:
-  - **Build Command**: `npm install && npm run build`
+  - **Build Command**: `npm ci --only=production`
   - **Start Command**: `npm start`
   - **Root Directory**: `/` (kosongkan)
 
 ## Deployment Process
 
 1. **Database Setup**: Script akan otomatis membuat tabel dan admin user
-2. **Build Process**: Vite akan build React app
+2. **Static Files**: Menggunakan pre-built files dari `dist/` folder
 3. **Start Process**: Node.js server akan start dengan database setup
 
 ## Default Admin Login
@@ -78,57 +78,34 @@ NODE_ENV=production
 
 ## Troubleshooting
 
-### Vite/Rollup Build Errors
-Jika mendapat error "Cannot find module @rollup/rollup-linux-x64-musl":
-1. **Solusi 1**: Gunakan Dockerfile deployment
-   - Railway akan otomatis detect Dockerfile
-   - Build process lebih reliable
-
-2. **Solusi 2**: Manual build fix
-   - Tambahkan `.npmrc` file dengan `optional=false`
-   - Gunakan `npm ci` instead of `npm install`
-
-3. **Solusi 3**: Switch to Docker deployment
-   - Di Railway settings, pilih "Dockerfile" deployment
-   - Redeploy project
-
-### Nixpacks Build Errors
-Jika mendapat error "undefined variable 'npm'":
-1. Pastikan file `nixpacks.toml` ada dan benar
-2. Coba redeploy project
-3. Jika masih error, gunakan Dockerfile sebagai alternatif
+### Build Issues (Resolved)
+- Aplikasi sekarang menggunakan pre-built static files
+- Tidak ada build process di Railway
+- Menggunakan `npm ci --only=production` untuk install dependencies
 
 ### Database Connection Issues
 - Pastikan environment variables database sudah benar
 - Cek log Railway untuk error koneksi
-
-### Build Issues
-- Pastikan semua dependencies ada di package.json
-- Cek log build untuk error
-- Pastikan Node.js version compatible (20.x)
 
 ### Runtime Issues
 - Cek log aplikasi untuk error
 - Pastikan port configuration benar
 - Pastikan database service running
 
-## Alternative Deployment Methods
+## Deployment Methods
 
 ### Method 1: Nixpacks (Recommended)
 - Gunakan file `nixpacks.toml` yang sudah disediakan
 - Railway akan otomatis detect dan gunakan konfigurasi ini
 
-### Method 2: Dockerfile (Most Reliable)
-Jika ada build issues, gunakan Dockerfile:
+### Method 2: Dockerfile (Alternative)
+Jika Nixpacks bermasalah, gunakan Dockerfile:
 ```dockerfile
 FROM node:20-alpine
 WORKDIR /app
 COPY package*.json .npmrc ./
 RUN npm ci --only=production
-RUN npm install --only=dev
 COPY . .
-RUN npm run build
-RUN npm prune --production
 RUN mkdir -p uploads
 EXPOSE 4000
 CMD ["npm", "start"]

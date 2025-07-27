@@ -68,6 +68,14 @@ app.use('/uploads', express.static('uploads'));
 // Serve React app in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, 'dist')));
+  
+  // Serve index.html for all routes in production
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+  });
+} else {
+  // In development, serve from root
+  app.use(express.static(path.join(__dirname)));
 }
 
 // ==================== AUTH ENDPOINTS ====================

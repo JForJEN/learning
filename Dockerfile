@@ -6,20 +6,11 @@ WORKDIR /app
 # Copy package files
 COPY package*.json .npmrc ./
 
-# Install dependencies with production flag
+# Install only production dependencies
 RUN npm ci --only=production
 
-# Install dev dependencies for build
-RUN npm install --only=dev
-
-# Copy source code
+# Copy source code and pre-built files
 COPY . .
-
-# Build the application
-RUN npm run build
-
-# Remove dev dependencies and clean up
-RUN npm prune --production
 
 # Create uploads directory
 RUN mkdir -p uploads
