@@ -17,6 +17,9 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 # Enable Apache mod_rewrite
 RUN a2enmod rewrite
 
+# Configure Apache for Railway
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
 # Set working directory
 WORKDIR /var/www/html
 
@@ -26,6 +29,9 @@ COPY . /var/www/html/
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
+
+# Create uploads directory if it doesn't exist
+RUN mkdir -p /var/www/html/uploads && chmod 777 /var/www/html/uploads
 
 # Expose port
 EXPOSE 8080
