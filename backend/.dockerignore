@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+package-lock.json
+.git
+.gitignore
+README.md
+.env
+.nyc_output
+coverage
+.cache
+.parcel-cache
+.next
+.nuxt
+.DS_Store
+*.log
+tmp
+uploads 

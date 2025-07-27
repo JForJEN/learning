@@ -139,8 +139,21 @@ Setelah deployment, Anda akan mendapatkan 2 URL:
 ## Troubleshooting
 
 ### Backend Issues
-1. **Database Connection**: Pastikan environment variables database sudah benar
-2. **CORS Issues**: Pastikan FRONTEND_URL sudah benar
+
+#### __dirname Error
+Jika mendapat error "Identifier '__dirname' has already been declared":
+1. **File Conflicts**: Pastikan tidak ada file `index.js` di folder backend
+2. **Module Type**: Pastikan `package.json` menggunakan `"type": "module"`
+3. **Import Paths**: Pastikan semua import menggunakan ES6 syntax
+
+#### Database Connection Issues
+1. **Environment Variables**: Pastikan semua database variables sudah benar
+2. **Database Service**: Pastikan MySQL service sudah running
+3. **Connection**: Cek apakah bisa connect ke database
+
+#### CORS Issues
+1. **Frontend URL**: Pastikan FRONTEND_URL sudah benar
+2. **CORS Configuration**: Pastikan backend mengizinkan frontend domain
 3. **Port Issues**: Pastikan port 4000 tidak terblokir
 
 ### Frontend Issues
