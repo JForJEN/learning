@@ -33,8 +33,12 @@ RUN chown -R www-data:www-data /var/www/html \
 # Create uploads directory if it doesn't exist
 RUN mkdir -p /var/www/html/uploads && chmod 777 /var/www/html/uploads
 
-# Expose port
-EXPOSE 8080
+# Make start script executable
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Start Apache
-CMD ["apache2-foreground"] 
+# Expose port (Railway will set PORT environment variable)
+EXPOSE $PORT
+
+# Start Apache with Railway port
+CMD ["/start.sh"] 
