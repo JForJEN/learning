@@ -4,16 +4,22 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY package*.json .npmrc ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies with production flag
+RUN npm ci --only=production
+
+# Install dev dependencies for build
+RUN npm install --only=dev
 
 # Copy source code
 COPY . .
 
 # Build the application
 RUN npm run build
+
+# Remove dev dependencies and clean up
+RUN npm prune --production
 
 # Create uploads directory
 RUN mkdir -p uploads

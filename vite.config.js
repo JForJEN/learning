@@ -27,6 +27,10 @@ export default defineConfig({
         assetFileNames: 'assets/[name]-[hash].[ext]'
       },
     },
+    // Fix for build issues
+    target: 'es2015',
+    minify: 'terser',
+    sourcemap: false,
   },
   server: {
     host: '0.0.0.0',

@@ -8,8 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "start": "node database/setup-database.js && node server.js",
-    "setup-db": "node database/setup-database.js",
-    "postinstall": "npm run build"
+    "setup-db": "node database/setup-database.js"
   },
   "dependencies": {
     "@google/genai": "^1.11.0",

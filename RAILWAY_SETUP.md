@@ -78,6 +78,20 @@ NODE_ENV=production
 
 ## Troubleshooting
 
+### Vite/Rollup Build Errors
+Jika mendapat error "Cannot find module @rollup/rollup-linux-x64-musl":
+1. **Solusi 1**: Gunakan Dockerfile deployment
+   - Railway akan otomatis detect Dockerfile
+   - Build process lebih reliable
+
+2. **Solusi 2**: Manual build fix
+   - Tambahkan `.npmrc` file dengan `optional=false`
+   - Gunakan `npm ci` instead of `npm install`
+
+3. **Solusi 3**: Switch to Docker deployment
+   - Di Railway settings, pilih "Dockerfile" deployment
+   - Redeploy project
+
 ### Nixpacks Build Errors
 Jika mendapat error "undefined variable 'npm'":
 1. Pastikan file `nixpacks.toml` ada dan benar
@@ -104,15 +118,18 @@ Jika mendapat error "undefined variable 'npm'":
 - Gunakan file `nixpacks.toml` yang sudah disediakan
 - Railway akan otomatis detect dan gunakan konfigurasi ini
 
-### Method 2: Dockerfile
-Jika Nixpacks bermasalah, buat file `Dockerfile`:
+### Method 2: Dockerfile (Most Reliable)
+Jika ada build issues, gunakan Dockerfile:
 ```dockerfile
 FROM node:20-alpine
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+COPY package*.json .npmrc ./
+RUN npm ci --only=production
+RUN npm install --only=dev
 COPY . .
 RUN npm run build
+RUN npm prune --production
+RUN mkdir -p uploads
 EXPOSE 4000
 CMD ["npm", "start"]
 ```
