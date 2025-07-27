@@ -1,0 +1,13 @@
+{
+  "name": "stilllearning-frontend",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "npx serve -s . -l 3000",
+    "build": "echo 'Frontend is pre-built'"
+  },
+  "dependencies": {
+    "serve": "^14.2.1"
+  }
+} 
