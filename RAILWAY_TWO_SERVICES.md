@@ -142,9 +142,11 @@ Setelah deployment, Anda akan mendapatkan 2 URL:
 
 #### __dirname Error
 Jika mendapat error "Identifier '__dirname' has already been declared":
-1. **File Conflicts**: Pastikan tidak ada file `index.js` di folder backend
+1. **File Conflicts**: Pastikan tidak ada file `index.js` di folder backend atau root project
 2. **Module Type**: Pastikan `package.json` menggunakan `"type": "module"`
 3. **Import Paths**: Pastikan semua import menggunakan ES6 syntax
+4. **Root Directory**: Pastikan Railway menggunakan root directory yang benar (`backend` untuk backend service)
+5. **Cache Issues**: Clear Railway cache atau redeploy service
 
 #### Database Connection Issues
 1. **Environment Variables**: Pastikan semua database variables sudah benar

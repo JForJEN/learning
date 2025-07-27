@@ -13,5 +13,8 @@ coverage
 .DS_Store
 *.log
 tmp
-.cursor
-.autopilot.json 
+uploads
+dist
+build
+.vscode
+.idea 

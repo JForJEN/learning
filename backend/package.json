@@ -3,6 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
+  "main": "server.js",
   "scripts": {
     "start": "node database/setup-database.js || echo 'Database setup failed, starting server anyway...' && node server.js",
     "setup-db": "node database/setup-database.js"

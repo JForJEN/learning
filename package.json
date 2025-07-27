@@ -7,8 +7,6 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "node database/setup-database.js || echo 'Database setup failed, starting server anyway...' && node server.js",
-    "setup-db": "node database/setup-database.js",
     "build:prod": "vite build"
   },
   "dependencies": {
