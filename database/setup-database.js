@@ -23,14 +23,23 @@ async function setupDatabase() {
     });
 
     // Create database if not exists
-    await connection.execute(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME || 'stilllearning_db'}`);
+    await connection.query(`CREATE DATABASE IF NOT EXISTS ${process.env.DB_NAME || 'stilllearning_db'}`);
     console.log('✅ Database created/verified');
 
-    // Use the database
-    await connection.query(`USE ${process.env.DB_NAME || 'stilllearning_db'}`);
+    // Close connection and reconnect with database
+    await connection.end();
+    
+    // Connect with database
+    const dbConnection = await mysql.createConnection({
+      host: dbConfig.host,
+      user: dbConfig.user,
+      password: dbConfig.password,
+      port: dbConfig.port,
+      database: process.env.DB_NAME || 'stilllearning_db',
+    });
 
     // Create users table
-    await connection.execute(`
+    await dbConnection.query(`
       CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
@@ -45,7 +54,7 @@ async function setupDatabase() {
     console.log('✅ Users table created/verified');
 
     // Create courses table
-    await connection.execute(`
+    await dbConnection.query(`
       CREATE TABLE IF NOT EXISTS courses (
         id INT AUTO_INCREMENT PRIMARY KEY,
         title VARCHAR(255) NOT NULL,
@@ -62,7 +71,7 @@ async function setupDatabase() {
     console.log('✅ Courses table created/verified');
 
     // Create comments table
-    await connection.execute(`
+    await dbConnection.query(`
       CREATE TABLE IF NOT EXISTS comments (
         id INT AUTO_INCREMENT PRIMARY KEY,
         content TEXT NOT NULL,
@@ -78,13 +87,13 @@ async function setupDatabase() {
     console.log('✅ Comments table created/verified');
 
     // Insert default admin user if not exists
-    const [adminUsers] = await connection.execute('SELECT * FROM users WHERE email = ?', ['admin@stilllearning.com']);
+    const [adminUsers] = await dbConnection.query('SELECT * FROM users WHERE email = ?', ['admin@stilllearning.com']);
     
     if (adminUsers.length === 0) {
       const bcrypt = await import('bcrypt');
       const hashedPassword = await bcrypt.hash('admin123', 10);
       
-      await connection.execute(`
+      await dbConnection.query(`
         INSERT INTO users (name, email, password, role) 
         VALUES (?, ?, ?, ?)
       `, ['Admin', 'admin@stilllearning.com', hashedPassword, 'admin']);
@@ -94,7 +103,7 @@ async function setupDatabase() {
       console.log('✅ Admin user already exists');
     }
 
-    await connection.end();
+    await dbConnection.end();
     console.log('🎉 Database setup completed successfully!');
     
   } catch (error) {

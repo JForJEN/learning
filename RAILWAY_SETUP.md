@@ -85,6 +85,13 @@ Aplikasi menyediakan beberapa endpoint untuk health check:
 
 ## Troubleshooting
 
+### Database Setup Issues
+Jika mendapat error "This command is not supported in the prepared statement protocol":
+1. **Environment Variables**: Pastikan semua database variables sudah benar
+2. **Database Service**: Pastikan MySQL service sudah running
+3. **Connection**: Cek apakah bisa connect ke database
+4. **Manual Setup**: Jika otomatis gagal, setup database manual
+
 ### Health Check Issues
 Jika mendapat error "service unavailable":
 1. **Cek Environment Variables**: Pastikan semua database variables sudah benar
