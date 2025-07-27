@@ -1,12 +1,13 @@
 <?php
 // ========================================
-// KONFIGURASI DATABASE BYETHOST
+// KONFIGURASI DATABASE RAILWAY
 // ========================================
-// Ganti dengan kredensial database Byethost Anda
-$host = 'localhost';  // Biasanya 'localhost' atau host yang diberikan Byethost
-$dbname = 'stilllearning';  // Nama database yang dibuat di Byethost
-$username = 'root';  // Ganti dengan username database Byethost
-$password = '';  // Ganti dengan password database Byethost
+// Menggunakan environment variables untuk Railway
+$host = getenv('DB_HOST') ?: 'localhost';
+$dbname = getenv('DB_NAME') ?: 'railway';
+$username = getenv('DB_USER') ?: 'root';
+$password = getenv('DB_PASS') ?: '';
+$dbport = getenv('DB_PORT') ?: '3306';
 
 // ========================================
 // DEBUG MODE - AKTIFKAN UNTUK BYETHOST
@@ -27,7 +28,8 @@ if (DEBUG_MODE) {
 // KONEKSI DATABASE DENGAN ERROR HANDLING
 // ========================================
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $dsn = "mysql:host=$host;port=$dbport;dbname=$dbname;charset=utf8mb4";
+    $pdo = new PDO($dsn, $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     if (DEBUG_MODE) {
         echo "<!-- Database connected successfully -->";
@@ -44,9 +46,9 @@ try {
 // KONFIGURASI APLIKASI
 // ========================================
 define('SITE_NAME', 'StillLearning');
-define('SITE_URL', 'http://yourdomain.byethost.com');  // Ganti dengan domain Byethost Anda
-define('UPLOAD_PATH', 'uploads/');
-define('MAX_FILE_SIZE', 2 * 1024 * 1024); // 2MB untuk Byethost free
+define('SITE_URL', getenv('APP_URL') ?: 'https://stilllearning-production-3b76.up.railway.app');
+define('UPLOAD_PATH', getenv('UPLOAD_PATH') ?: 'uploads/');
+define('MAX_FILE_SIZE', getenv('MAX_FILE_SIZE') ?: (10 * 1024 * 1024)); // 10MB untuk Railway
 
 // Mulai session dengan error handling
 if (session_status() == PHP_SESSION_NONE) {
