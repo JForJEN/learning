@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const LoginPage = () => {
-  const { login, isAdmin } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -11,14 +11,18 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isAdminLogin, setIsAdminLogin] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const from = location.state?.from?.pathname || location.search.replace('?redirect=', '') || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
+    
     if (!email || !password) {
       setError('Email dan password harus diisi');
+      setLoading(false);
       return;
     }
     
@@ -39,39 +43,45 @@ const LoginPage = () => {
         } else {
           navigate(from);
         }
-      } else {
-        setError('Gagal login. Silakan periksa email dan password Anda.');
       }
     } catch (err) {
       console.error('❌ Login error:', err);
-      setError('Gagal login. Silakan periksa email dan password Anda.');
+      setError(err.message || 'Gagal login. Silakan periksa email dan password Anda.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="max-w-md mx-auto mt-12 p-6 bg-gray-900 rounded-lg border border-gray-700">
       <h1 className="text-3xl font-bold mb-6 text-white text-center">Masuk</h1>
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {error && (
+        <div className="mb-4 p-3 bg-red-900 text-red-400 rounded-md">
+          {error}
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-300">Email</label>
+          <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">Email</label>
           <input
             id="email"
             type="email"
-            className="w-full p-2 rounded-md bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-white"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="Masukkan email Anda"
             required
           />
         </div>
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-300">Password</label>
+          <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">Password</label>
           <input
             id="password"
             type="password"
-            className="w-full p-2 rounded-md bg-gray-800 border border-gray-600 text-white focus:outline-none focus:ring-2 focus:ring-white"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            placeholder="Masukkan password Anda"
             required
           />
         </div>
@@ -87,11 +97,21 @@ const LoginPage = () => {
         </div>
         <button
           type="submit"
-          className="w-full py-2 bg-white text-black font-semibold rounded-md hover:bg-gray-200 transition-colors"
+          disabled={loading}
+          className="w-full py-2 bg-white text-black font-semibold rounded-md hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Masuk
+          {loading ? 'Memproses...' : 'Masuk'}
         </button>
       </form>
+      
+      <div className="mt-6 text-center">
+        <p className="text-gray-400 text-sm">
+          Belum punya akun?{' '}
+          <a href="/register" className="text-blue-400 hover:text-blue-300">
+            Daftar di sini
+          </a>
+        </p>
+      </div>
     </div>
   );
 };

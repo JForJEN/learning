@@ -9,13 +9,13 @@ const SubmitCoursePage = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    contentType: 'ARTICLE',
-    content: '',
-    thumbnailUrl: 'https://picsum.photos/seed/course/600/400'
+    contentType: 'article',
+    content: ''
   });
 
   const [uploadedFile, setUploadedFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
@@ -35,22 +35,18 @@ const SubmitCoursePage = () => {
     // Auto-detect content type berdasarkan file extension
     const extension = file.name.split('.').pop().toLowerCase();
     const contentTypeMap = {
-      'pdf': 'PDF',
-      'doc': 'WORD',
-      'docx': 'WORD',
-      'ppt': 'PPT',
-      'pptx': 'PPT',
-      'mp4': 'VIDEO',
-      'avi': 'VIDEO',
-      'mov': 'VIDEO',
-      'mp3': 'AUDIO',
-      'wav': 'AUDIO',
-      'jpg': 'IMAGE',
-      'jpeg': 'IMAGE',
-      'png': 'IMAGE',
-      'gif': 'IMAGE',
-      'txt': 'ARTICLE',
-      'md': 'ARTICLE'
+      'pdf': 'pdf',
+      'mp4': 'video',
+      'avi': 'video',
+      'mov': 'video',
+      'mp3': 'audio',
+      'wav': 'audio',
+      'jpg': 'image',
+      'jpeg': 'image',
+      'png': 'image',
+      'gif': 'image',
+      'txt': 'article',
+      'md': 'article'
     };
     
     if (contentTypeMap[extension]) {
@@ -58,23 +54,24 @@ const SubmitCoursePage = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     
-    if (uploadedFile) {
+    try {
       const courseData = {
         ...formData,
-        uploadedFile: uploadedFile,
-        fileName: uploadedFile.name,
-        fileSize: uploadedFile.size,
-        fileType: uploadedFile.type
+        uploadedFile: uploadedFile
       };
-      addCourseForApproval(courseData);
-    } else {
-      addCourseForApproval(formData);
+      
+      await addCourseForApproval(courseData);
+      navigate('/');
+    } catch (error) {
+      console.error('Error submitting course:', error);
+      alert('Gagal mengirim materi. Silakan coba lagi.');
+    } finally {
+      setLoading(false);
     }
-    
-    navigate('/');
   };
 
   const handleChange = (e) => {
@@ -100,118 +97,108 @@ const SubmitCoursePage = () => {
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className="w-full p-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-white focus:outline-none"
             required
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Masukkan judul materi"
           />
         </div>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">Deskripsi</label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleChange}
-            rows={3}
-            className="w-full p-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-white focus:outline-none"
             required
+            rows="3"
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="Jelaskan materi yang akan Anda bagikan"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-2">Upload File</label>
-          <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center">
-            <input
-              type="file"
-              onChange={handleFileUpload}
-              accept=".pdf,.doc,.docx,.ppt,.pptx,.mp4,.avi,.mov,.mp3,.wav,.jpg,.jpeg,.png,.gif,.txt,.md"
-              className="hidden"
-              id="file-upload"
-            />
-            <label htmlFor="file-upload" className="cursor-pointer">
-              <div className="text-gray-400 mb-2">
-                <svg className="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                  <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-              </div>
-              <p className="text-sm text-gray-400">
-                Klik untuk upload file atau drag and drop
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                PDF, Word, PPT, Video, Audio, Gambar, atau Teks (max 50MB)
-              </p>
-            </label>
-          </div>
-        </div>
-
-        {uploadedFile && (
-          <div className="bg-gray-800 p-4 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                {filePreview ? (
-                  <img src={filePreview} alt="preview" className="w-12 h-12 object-cover rounded" />
-                ) : (
-                  <div className="w-12 h-12 bg-gray-700 rounded flex items-center justify-center">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                  </div>
-                )}
-                <div>
-                  <p className="text-white font-medium">{uploadedFile.name}</p>
-                  <p className="text-gray-400 text-sm">{(uploadedFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={removeFile}
-                className="text-red-400 hover:text-red-300"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
-        
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">Tipe Konten</label>
           <select
             name="contentType"
             value={formData.contentType}
             onChange={handleChange}
-            className="w-full p-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-white focus:outline-none"
+            required
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           >
-            <option value="ARTICLE">Artikel</option>
-            <option value="VIDEO">Video</option>
-            <option value="AUDIO">Audio</option>
-            <option value="IMAGE">Gambar</option>
-            <option value="PDF">PDF</option>
-            <option value="WORD">Word</option>
-            <option value="PPT">PowerPoint</option>
+            <option value="article">Artikel</option>
+            <option value="video">Video</option>
+            <option value="audio">Audio</option>
+            <option value="image">Gambar</option>
+            <option value="pdf">PDF</option>
           </select>
         </div>
-        
-        {!uploadedFile && (
+
+        {formData.contentType === 'article' && (
           <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">Konten (jika tidak upload file)</label>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Konten Artikel</label>
             <textarea
               name="content"
               value={formData.content}
               onChange={handleChange}
-              rows={10}
-              className="w-full p-3 bg-gray-800 border border-gray-600 rounded-md text-white focus:ring-2 focus:ring-white focus:outline-none"
-              placeholder="Masukkan konten materi Anda di sini..."
+              rows="10"
+              className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Tulis konten artikel Anda di sini..."
             />
           </div>
         )}
-        
-        <button
-          type="submit"
-          className="w-full py-3 bg-white text-black font-semibold rounded-md hover:bg-gray-200 transition-colors"
-        >
-          Submit untuk Review
-        </button>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-2">Upload File (Opsional)</label>
+          <input
+            type="file"
+            onChange={handleFileUpload}
+            className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            accept=".pdf,.mp4,.avi,.mov,.mp3,.wav,.jpg,.jpeg,.png,.gif,.txt,.md"
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Format yang didukung: PDF, Video (MP4, AVI, MOV), Audio (MP3, WAV), Gambar (JPG, PNG, GIF), Teks (TXT, MD)
+          </p>
+        </div>
+
+        {filePreview && (
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-2">Preview File</label>
+            <div className="relative">
+              <img src={filePreview} alt="Preview" className="max-w-full h-auto rounded-md" />
+              <button
+                type="button"
+                onClick={removeFile}
+                className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full hover:bg-red-700"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
+
+        {uploadedFile && (
+          <div className="p-3 bg-gray-800 rounded-md">
+            <p className="text-sm text-gray-300">File: {uploadedFile.name}</p>
+            <p className="text-xs text-gray-400">Ukuran: {(uploadedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+          </div>
+        )}
+
+        <div className="flex space-x-4">
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Mengirim...' : 'Submit Materi'}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 transition-colors"
+          >
+            Batal
+          </button>
+        </div>
       </form>
     </div>
   );

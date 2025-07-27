@@ -235,6 +235,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const rejectCourse = async (courseId) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/courses/${courseId}`, {
+        method: 'DELETE',
+      });
+      
+      if (!res.ok) {
+        throw new Error('Gagal reject course');
+      }
+      
+      await fetchCourses();
+    } catch (error) {
+      console.error('Reject course error:', error);
+      throw error;
+    }
+  };
+
   const addComment = async (courseId, text, parentCommentId) => {
     if (!currentUser) return;
     
@@ -297,9 +314,11 @@ export const AuthProvider = ({ children }) => {
       pendingCourses, 
       addCourseForApproval, 
       approveCourse, 
+      rejectCourse,
       addComment, 
       updateProfile,
-      loading 
+      loading,
+      getApiBaseUrl
     }}>
       {children}
     </AuthContext.Provider>

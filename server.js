@@ -62,6 +62,11 @@ app.use(async (req, res, next) => {
 // Serve static files
 app.use('/uploads', express.static('uploads'));
 
+// Serve React app in production
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static(path.join(__dirname, 'dist')));
+}
+
 // ==================== AUTH ENDPOINTS ====================
 
 // Login user
@@ -120,19 +125,19 @@ app.post('/api/register', async (req, res) => {
 // Update user profile
 app.put('/api/users/:id', async (req, res) => {
   const { id } = req.params;
-  const { name, email, avatar } = req.body;
+  const { name, email, phone, address } = req.body;
   
   try {
     const [result] = await req.db.query(
-      'UPDATE users SET name = ?, email = ?, avatar = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [name, email, avatar, id]
+      'UPDATE users SET name = ?, email = ?, phone = ?, address = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [name, email, phone, address, id]
     );
     
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'User tidak ditemukan' });
     }
     
-    const [updatedUser] = await req.db.query('SELECT id, name, email, role, avatar FROM users WHERE id = ?', [id]);
+    const [updatedUser] = await req.db.query('SELECT id, name, email, role, phone, address FROM users WHERE id = ?', [id]);
     res.json(updatedUser[0]);
   } catch (error) {
     console.error('Error update profile:', error);
@@ -305,52 +310,68 @@ app.get('/api/courses/:id', async (req, res) => {
   }
 });
 
-// Submit new course
+// Create new course
 app.post('/api/courses', upload.single('file'), async (req, res) => {
-  const { title, description, contentType, content } = req.body;
-  const authorId = req.body.authorId; // Akan dikirim dari frontend
+  const { title, description, content, contentType, authorId } = req.body;
   
   if (!title || !description || !contentType || !authorId) {
-    return res.status(400).json({ error: 'Semua field wajib diisi' });
+    return res.status(400).json({ error: 'Semua field harus diisi' });
   }
   
   try {
-    let filePath = null;
-    let fileName = null;
-    let fileSize = null;
-    let fileType = null;
-    
+    let fileData = {};
     if (req.file) {
-      filePath = `/uploads/${req.file.filename}`;
-      fileName = req.file.originalname;
-      fileSize = req.file.size;
-      fileType = req.file.mimetype;
+      fileData = {
+        fileName: req.file.originalname,
+        fileSize: req.file.size,
+        fileType: req.file.mimetype,
+        filePath: req.file.path
+      };
     }
     
     const [result] = await req.db.query(`
-      INSERT INTO courses (title, description, content, contentType, thumbnailUrl, author_id, fileName, fileSize, fileType, filePath, isPublished) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, FALSE)
-    `, [title, description, content, contentType, 'https://picsum.photos/seed/course/600/400', authorId, fileName, fileSize, fileType, filePath]);
+      INSERT INTO courses (title, description, content, contentType, author_id, fileName, fileSize, fileType, filePath, isPublished) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `, [
+      title, 
+      description, 
+      content || '', 
+      contentType, 
+      authorId,
+      fileData.fileName || null,
+      fileData.fileSize || null,
+      fileData.fileType || null,
+      fileData.filePath || null,
+      false // Default to pending
+    ]);
     
-    res.status(201).json({ 
-      id: result.insertId, 
-      message: 'Course berhasil disubmit untuk review' 
-    });
+    const newCourse = {
+      id: result.insertId,
+      title,
+      description,
+      content,
+      contentType,
+      authorId: parseInt(authorId),
+      isPublished: false,
+      ...fileData
+    };
+    
+    res.status(201).json(newCourse);
   } catch (error) {
-    console.error('Error submitting course:', error);
-    res.status(500).json({ error: 'Gagal submit course' });
+    console.error('Error creating course:', error);
+    res.status(500).json({ error: 'Gagal membuat course' });
   } finally {
     req.db.end();
   }
 });
 
-// Approve course (admin only)
+// Approve course
 app.put('/api/courses/:id/approve', async (req, res) => {
   const { id } = req.params;
   
   try {
     const [result] = await req.db.query(
-      'UPDATE courses SET isPublished = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      'UPDATE courses SET isPublished = 1 WHERE id = ?',
       [id]
     );
     
@@ -358,10 +379,39 @@ app.put('/api/courses/:id/approve', async (req, res) => {
       return res.status(404).json({ error: 'Course tidak ditemukan' });
     }
     
-    res.json({ message: 'Course berhasil diapprove' });
+    res.json({ message: 'Course berhasil disetujui' });
   } catch (error) {
     console.error('Error approving course:', error);
-    res.status(500).json({ error: 'Gagal approve course' });
+    res.status(500).json({ error: 'Gagal menyetujui course' });
+  } finally {
+    req.db.end();
+  }
+});
+
+// Reject course
+app.delete('/api/courses/:id', async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    // Get course info for file deletion
+    const [courseRows] = await req.db.query('SELECT filePath FROM courses WHERE id = ?', [id]);
+    
+    if (courseRows.length === 0) {
+      return res.status(404).json({ error: 'Course tidak ditemukan' });
+    }
+    
+    // Delete file if exists
+    if (courseRows[0].filePath && fs.existsSync(courseRows[0].filePath)) {
+      fs.unlinkSync(courseRows[0].filePath);
+    }
+    
+    // Delete course
+    await req.db.query('DELETE FROM courses WHERE id = ?', [id]);
+    
+    res.json({ message: 'Course berhasil dihapus' });
+  } catch (error) {
+    console.error('Error deleting course:', error);
+    res.status(500).json({ error: 'Gagal menghapus course' });
   } finally {
     req.db.end();
   }
@@ -375,16 +425,16 @@ app.post('/api/courses/:courseId/comments', async (req, res) => {
   const { text, authorId, parentId } = req.body;
   
   if (!text || !authorId) {
-    return res.status(400).json({ error: 'Text dan authorId wajib diisi' });
+    return res.status(400).json({ error: 'Text dan authorId harus diisi' });
   }
   
   try {
-    const [result] = await req.db.query(
-      'INSERT INTO comments (course_id, author_id, text, parent_id) VALUES (?, ?, ?, ?)',
-      [courseId, authorId, text, parentId || null]
-    );
+    const [result] = await req.db.query(`
+      INSERT INTO comments (text, author_id, course_id, parent_id) 
+      VALUES (?, ?, ?, ?)
+    `, [text, authorId, courseId, parentId || null]);
     
-    // Get the created comment with author info
+    // Get the new comment with author info
     const [commentRows] = await req.db.query(`
       SELECT c.*, u.name as author_name, u.id as author_id 
       FROM comments c 
@@ -392,7 +442,7 @@ app.post('/api/courses/:courseId/comments', async (req, res) => {
       WHERE c.id = ?
     `, [result.insertId]);
     
-    const comment = {
+    const newComment = {
       id: commentRows[0].id,
       text: commentRows[0].text,
       timestamp: commentRows[0].created_at,
@@ -403,7 +453,7 @@ app.post('/api/courses/:courseId/comments', async (req, res) => {
       replies: []
     };
     
-    res.status(201).json(comment);
+    res.status(201).json(newComment);
   } catch (error) {
     console.error('Error adding comment:', error);
     res.status(500).json({ error: 'Gagal menambah komentar' });
@@ -412,68 +462,84 @@ app.post('/api/courses/:courseId/comments', async (req, res) => {
   }
 });
 
-// Get comments for a course
-app.get('/api/courses/:courseId/comments', async (req, res) => {
-  const { courseId } = req.params;
-  
+// ==================== ADMIN ENDPOINTS ====================
+
+// Get all users (admin only)
+app.get('/api/admin/users', async (req, res) => {
   try {
     const [rows] = await req.db.query(`
-      SELECT c.*, u.name as author_name, u.id as author_id 
-      FROM comments c 
-      JOIN users u ON c.author_id = u.id 
-      WHERE c.course_id = ? 
-      ORDER BY c.created_at ASC
-    `, [courseId]);
+      SELECT id, name, email, role, phone, address, created_at 
+      FROM users 
+      ORDER BY created_at DESC
+    `);
     
-    // Transform to nested structure
-    const comments = rows
-      .filter(comment => !comment.parent_id)
-      .map(comment => ({
-        id: comment.id,
-        text: comment.text,
-        timestamp: comment.created_at,
-        author: {
-          id: comment.author_id,
-          name: comment.author_name
-        },
-        replies: rows
-          .filter(reply => reply.parent_id === comment.id)
-          .map(reply => ({
-            id: reply.id,
-            text: reply.text,
-            timestamp: reply.created_at,
-            author: {
-              id: reply.author_id,
-              name: reply.author_name
-            },
-            replies: []
-          }))
-      }));
-    
-    res.json(comments);
+    res.json(rows);
   } catch (error) {
-    console.error('Error fetching comments:', error);
-    res.status(500).json({ error: 'Gagal mengambil komentar' });
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Gagal mengambil data users' });
   } finally {
     req.db.end();
   }
 });
 
-// Serve React app in production
-if (process.env.NODE_ENV === 'production') {
-  // Serve static files from the React app build directory
-  app.use(express.static(path.join(__dirname, 'dist')));
+// Delete user (admin only)
+app.delete('/api/admin/users/:id', async (req, res) => {
+  const { id } = req.params;
   
-  // Handle React routing, return all requests to React app
+  try {
+    const [result] = await req.db.query('DELETE FROM users WHERE id = ?', [id]);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'User tidak ditemukan' });
+    }
+    
+    res.json({ message: 'User berhasil dihapus' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    res.status(500).json({ error: 'Gagal menghapus user' });
+  } finally {
+    req.db.end();
+  }
+});
+
+// Get statistics (admin only)
+app.get('/api/admin/stats', async (req, res) => {
+  try {
+    const [userCount] = await req.db.query('SELECT COUNT(*) as count FROM users WHERE role = "user"');
+    const [courseCount] = await req.db.query('SELECT COUNT(*) as count FROM courses WHERE isPublished = 1');
+    const [pendingCount] = await req.db.query('SELECT COUNT(*) as count FROM courses WHERE isPublished = 0');
+    const [commentCount] = await req.db.query('SELECT COUNT(*) as count FROM comments');
+    
+    res.json({
+      totalUsers: userCount[0].count,
+      approvedCourses: courseCount[0].count,
+      pendingCourses: pendingCount[0].count,
+      totalComments: commentCount[0].count
+    });
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.status(500).json({ error: 'Gagal mengambil statistik' });
+  } finally {
+    req.db.end();
+  }
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Handle React routing, return all requests to React app
+if (process.env.NODE_ENV === 'production') {
   app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'dist', 'index.html'));
   });
 }
 
-// Jalankan server
+// Start server
 app.listen(port, () => {
-  console.log(`🚀 Server berjalan di http://localhost:${port}`);
-  console.log(`📁 Upload directory: ${path.join(__dirname, 'uploads')}`);
+  console.log(`🚀 Server berjalan di port ${port}`);
+  console.log(`📊 Database: ${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`);
   if (process.env.NODE_ENV === 'production') {
     console.log('🌐 Production mode: Serving React app');
   }

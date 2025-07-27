@@ -4,13 +4,10 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "dev:frontend": "vite",
-    "dev:backend": "nodemon backend/index.js",
-    "build": "NODE_ENV=production vite build",
+    "dev": "vite",
+    "build": "vite build",
     "preview": "vite preview",
-    "start": "node backend/index.js",
-    "install:all": "npm install",
+    "start": "node server.js",
     "setup-db": "node backend/setup-database.js"
   },
   "dependencies": {
@@ -23,15 +20,13 @@
     "mysql2": "^3.6.5",
     "cors": "^2.8.5",
     "bcrypt": "^5.1.1",
-    "multer": "^1.4.5-lts.1",
-    "path": "^0.12.7"
+    "multer": "^1.4.5-lts.1"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^4.7.0",
     "typescript": "~5.7.2",
     "vite": "^6.2.0",
-    "nodemon": "^3.0.2",
-    "concurrently": "^8.2.2"
+    "nodemon": "^3.0.2"
   }
 }

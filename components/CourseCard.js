@@ -1,37 +1,53 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { IconArticle, IconImage, IconPDF, IconAudio, IconVideo, IconWord, IconPPT } from './Icons';
+import { IconArticle, IconImage, IconPDF, IconAudio, IconVideo } from './Icons';
 
 const ContentTypeIcon = ({ type }) => {
   const iconClasses = "w-5 h-5 text-gray-400";
   switch (type) {
-    case 'ARTICLE': return <IconArticle className={iconClasses} />;
-    case 'IMAGE': return <IconImage className={iconClasses} />;
-    case 'PDF': return <IconPDF className={iconClasses} />;
-    case 'AUDIO': return <IconAudio className={iconClasses} />;
-    case 'VIDEO': return <IconVideo className={iconClasses} />;
-    case 'WORD': return <IconWord className={iconClasses} />;
-    case 'PPT': return <IconPPT className={iconClasses} />;
-    default: return null;
+    case 'article': return <IconArticle className={iconClasses} />;
+    case 'image': return <IconImage className={iconClasses} />;
+    case 'pdf': return <IconPDF className={iconClasses} />;
+    case 'audio': return <IconAudio className={iconClasses} />;
+    case 'video': return <IconVideo className={iconClasses} />;
+    default: return <IconArticle className={iconClasses} />;
   }
 };
 
 const CourseCard = ({ course }) => {
   const renderPreview = () => {
+    if (course.thumbnailUrl) {
+      return (
+        <img className="h-48 w-full object-cover" src={course.thumbnailUrl} alt={course.title} />
+      );
+    }
+    
     switch (course.contentType) {
-      case 'VIDEO':
-        return (
+      case 'video':
+        return course.filePath ? (
           <video className="h-48 w-full object-cover" src={course.filePath} controls muted />
+        ) : (
+          <div className="h-48 w-full flex items-center justify-center bg-gray-800">
+            <ContentTypeIcon type={course.contentType} />
+          </div>
         );
-      case 'AUDIO':
-        return (
+      case 'audio':
+        return course.filePath ? (
           <div className="h-48 w-full flex items-center justify-center bg-gray-800">
             <audio src={course.filePath} controls />
           </div>
+        ) : (
+          <div className="h-48 w-full flex items-center justify-center bg-gray-800">
+            <ContentTypeIcon type={course.contentType} />
+          </div>
         );
-      case 'IMAGE':
-        return (
+      case 'image':
+        return course.filePath ? (
           <img className="h-48 w-full object-cover" src={course.filePath} alt={course.title} />
+        ) : (
+          <div className="h-48 w-full flex items-center justify-center bg-gray-800">
+            <ContentTypeIcon type={course.contentType} />
+          </div>
         );
       default:
         return (
