@@ -3,11 +3,11 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy package files
-COPY package*.json .npmrc ./
+# Copy package.json only (no package-lock.json)
+COPY package.json ./
 
-# Install only production dependencies
-RUN npm ci --only=production
+# Install only production dependencies without lock file
+RUN npm install --only=production --no-package-lock
 
 # Copy source code and pre-built files
 COPY . .

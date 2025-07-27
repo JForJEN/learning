@@ -2,7 +2,7 @@
 nixPkgs = ["nodejs_20", "nodePackages.npm"]
 
 [phases.install]
-cmds = ["npm ci --only=production"]
+cmds = ["npm install --only=production --no-package-lock"]
 
 [start]
 cmd = "npm start" 

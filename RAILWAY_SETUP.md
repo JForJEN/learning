@@ -61,7 +61,7 @@ NODE_ENV=production
 ### 3. Configure Build Settings
 - Buka tab "Settings"
 - Pastikan:
-  - **Build Command**: `npm ci --only=production`
+  - **Build Command**: `npm install --only=production --no-package-lock`
   - **Start Command**: `npm start`
   - **Root Directory**: `/` (kosongkan)
 
@@ -78,10 +78,10 @@ NODE_ENV=production
 
 ## Troubleshooting
 
-### Build Issues (Resolved)
-- Aplikasi sekarang menggunakan pre-built static files
-- Tidak ada build process di Railway
-- Menggunakan `npm ci --only=production` untuk install dependencies
+### Installation Issues (Resolved)
+- Menggunakan `npm install --only=production --no-package-lock`
+- Mengabaikan `package-lock.json` untuk menghindari konflik
+- Hanya menginstall production dependencies
 
 ### Database Connection Issues
 - Pastikan environment variables database sudah benar
@@ -103,8 +103,8 @@ Jika Nixpacks bermasalah, gunakan Dockerfile:
 ```dockerfile
 FROM node:20-alpine
 WORKDIR /app
-COPY package*.json .npmrc ./
-RUN npm ci --only=production
+COPY package.json ./
+RUN npm install --only=production --no-package-lock
 COPY . .
 RUN mkdir -p uploads
 EXPOSE 4000
