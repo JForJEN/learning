@@ -14,6 +14,9 @@ const __dirname = dirname(__filename);
 const app = express();
 const port = process.env.PORT || 4000;
 
+// JWT Secret for production
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-here';
+
 app.use(cors());
 app.use(express.json());
 

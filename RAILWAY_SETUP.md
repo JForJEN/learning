@@ -1,85 +1,106 @@
-# 🚀 Railway Setup Guide - StillLearning
+# Railway Deployment Guide
 
-## 📋 **Langkah-langkah Setup Railway:**
+## Setup Railway Project
 
-### 1. **Buka Railway Dashboard**
-- Buka [Railway.app](https://railway.app)
-- Login dengan GitHub
-- Pilih project `stilllearning`
+### 1. Create Railway Account
+- Buka [railway.app](https://railway.app)
+- Login dengan GitHub account (JForJEN)
 
-### 2. **Pilih Service Utama (Bukan MySQL)**
-- Di project, pilih service yang berisi kode aplikasi
-- **JANGAN** pilih service MySQL
+### 2. Create New Project
+- Klik "New Project"
+- Pilih "Deploy from GitHub repo"
+- Pilih repository `JForJEN/learning`
 
-### 3. **Buka Tab Variables**
-- Klik tab **"Variables"** di service utama
-- Atau klik **"Environment"** di sidebar
+## Database Setup
 
-### 4. **Tambahkan Environment Variables**
-Klik **"New Variable"** dan tambahkan satu per satu:
+### 1. Add MySQL Database
+- Di project Railway, klik "New Service"
+- Pilih "Database" → "MySQL"
+- Railway akan otomatis membuat database MySQL
 
-```
-DB_HOST=shortline.proxy.rlwy.net
-DB_PORT=51846
-DB_USER=root
-DB_PASSWORD=rUgVruqkniZedtBpMSgzNpqfmtTzHrBU
-DB_NAME=railway
-NODE_ENV=production
+### 2. Get Database Variables
+- Klik service MySQL
+- Buka tab "Variables"
+- Catat semua environment variables:
+  - `MYSQL_HOST`
+  - `MYSQL_USER`
+  - `MYSQL_PASSWORD`
+  - `MYSQL_DATABASE`
+  - `MYSQL_PORT`
+
+## Application Setup
+
+### 1. Deploy Application
+- Kembali ke project Railway
+- Klik "New Service" → "GitHub Repo"
+- Pilih repository `JForJEN/learning`
+
+### 2. Configure Environment Variables
+- Klik service aplikasi
+- Buka tab "Variables"
+- Tambahkan variables berikut:
+
+```env
+# Database Configuration
+DB_HOST=${{MySQL.MYSQL_HOST}}
+DB_USER=${{MySQL.MYSQL_USER}}
+DB_PASSWORD=${{MySQL.MYSQL_PASSWORD}}
+DB_NAME=${{MySQL.MYSQL_DATABASE}}
+DB_PORT=${{MySQL.MYSQL_PORT}}
+
+# JWT Secret
+JWT_SECRET=your-super-secret-jwt-key-here
+
+# Port Configuration
 PORT=4000
+
+# Node Environment
+NODE_ENV=production
 ```
 
-### 5. **Save dan Redeploy**
-- Setelah semua variables ditambahkan
-- Klik **"Save"**
-- Railway akan otomatis redeploy
+### 3. Configure Build Settings
+- Buka tab "Settings"
+- Pastikan:
+  - **Build Command**: `npm install && npm run build`
+  - **Start Command**: `npm start`
+  - **Root Directory**: `/` (kosongkan)
 
-## 🔍 **Test Setup:**
+## Deployment Process
 
-### Test Environment Variables:
-```
-https://stilllearning-production-3b76.up.railway.app/api/env-check
-```
+1. **Database Setup**: Script akan otomatis membuat tabel dan admin user
+2. **Build Process**: Vite akan build React app
+3. **Start Process**: Node.js server akan start dengan database setup
 
-### Test Database Connection:
-```
-https://stilllearning-production-3b76.up.railway.app/api/test-db
-```
+## Default Admin Login
 
-### Test Health Check:
-```
-https://stilllearning-production-3b76.up.railway.app/health
-```
+- **Email**: admin@stilllearning.com
+- **Password**: admin123
 
-## ⚠️ **Troubleshooting:**
+## Troubleshooting
 
-### Jika Environment Variables "NOT SET":
-1. Pastikan menambahkan di **service utama** (bukan MySQL)
-2. Pastikan nama variable benar (DB_HOST, bukan DBHOST)
-3. Pastikan tidak ada spasi ekstra
-4. Redeploy setelah menambahkan variables
+### Database Connection Issues
+- Pastikan environment variables database sudah benar
+- Cek log Railway untuk error koneksi
 
-### Jika Database Connection Failed:
-1. Cek apakah MySQL service running
-2. Cek environment variables sudah benar
-3. Cek logs Railway untuk error detail
+### Build Issues
+- Pastikan semua dependencies ada di package.json
+- Cek log build untuk error
 
-## 📱 **Lokasi di Railway Dashboard:**
+### Runtime Issues
+- Cek log aplikasi untuk error
+- Pastikan port configuration benar
 
-```
-Railway Dashboard
-├── stilllearning (Project)
-│   ├── stilllearning-production-3b76 (Service Utama) ← KLIK INI
-│   │   ├── Variables ← TAMBAHKAN ENV VARS DI SINI
-│   │   ├── Deployments
-│   │   └── Logs
-│   └── MySQL Database (Service Database)
-```
+## Monitoring
 
-## 🎯 **Setelah Setup Berhasil:**
+- Gunakan Railway dashboard untuk monitor:
+  - CPU usage
+  - Memory usage
+  - Network traffic
+  - Logs
 
-- Login: `admin@stilllearning.com` / `password`
-- Register: Bisa daftar user baru
-- Upload Course: Bisa upload file
-- Admin Approve: Bisa approve course
-- Comments: Bisa tambah komentar
-- File Playback: Video/audio/images bisa diputar 
+## Custom Domain (Optional)
+
+- Di service aplikasi, buka tab "Settings"
+- Klik "Custom Domains"
+- Tambahkan domain Anda
+- Update DNS records sesuai instruksi Railway 
